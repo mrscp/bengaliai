@@ -1,0 +1,5 @@
+version: '3'
+services:
+  bengaliai:
+    build: .
+    command: python main.py
