@@ -1,17 +1,13 @@
-import pandas as pd
-from zipfile import ZipFile
+from modes.modes import Mode
+from modes.process import Process
 
 
-class Main:
+class Main(Mode):
     def __init__(self):
-        dataset_location = "D:\\datasets"
+        super(Main, self).__init__()
 
-        print(dataset_location)
-
-        with ZipFile("bengaliai-cv19.zip") as z:
-            with z.open("test.csv") as f:
-                train = pd.read_csv(f, header=0, delimiter="\t")
-                print(train.head())  # print the first 5 rows
+        if self["MAIN"]["MODE"] == "process":
+            Process()
 
 
 if __name__ == '__main__':
