@@ -9,6 +9,9 @@ class Mode(Config):
 
         self._start_time = time()
 
+    def elapsed_time(self):
+        return timedelta(seconds=(time() - self._start_time))
+
     def __del__(self):
         print("{} finish".format(self.__class__.__name__))
         print("\tTime taken: {}".format(timedelta(seconds=(time() - self._start_time))))
