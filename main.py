@@ -1,5 +1,6 @@
 from modes.modes import Mode
 from modes.process import Process
+from modes.train import Train
 
 
 class Main(Mode):
@@ -8,6 +9,10 @@ class Main(Mode):
 
         if self["MAIN"]["MODE"] == "process":
             Process()
+        elif self["MAIN"]["MODE"] == "train":
+            Train()
+        else:
+            print("Invalid mode")
 
 
 if __name__ == '__main__':
