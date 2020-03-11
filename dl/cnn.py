@@ -10,6 +10,8 @@ from os.path import join
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
+        use_cuda = torch.cuda.is_available()
+        self._device = torch.device("cuda" if use_cuda else "cpu")
 
         self.conv1 = nn.Conv2d(1, 32, 3, 1)
         self.conv2 = nn.Conv2d(32, 64, 3, 1)
@@ -24,6 +26,9 @@ class CNN(nn.Module):
 
         self._criterion = nn.BCELoss()
         self._optimizer = optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
+
+        self.to(self._device)
+        print("device", self._device)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -53,6 +58,11 @@ class CNN(nn.Module):
         vowel_diacritic = Tensor(outputs[1])
         consonant_diacritic = Tensor(outputs[2])
 
+        inputs = inputs.to(self._device)
+        grapheme_root = grapheme_root.to(self._device)
+        vowel_diacritic = vowel_diacritic.to(self._device)
+        consonant_diacritic = consonant_diacritic.to(self._device)
+
         self._optimizer.zero_grad()
         grapheme_root_pred, vowel_diacritic_pred, consonant_diacritic_pred = self(inputs)
 
@@ -69,6 +79,7 @@ class CNN(nn.Module):
 
     def predict(self, inputs):
         inputs = Tensor(inputs)
+        inputs = inputs.to(self._device)
         grapheme_root_hat, vowel_diacritic_hat, consonant_diacritic_hat = self(inputs)
 
         _, grapheme_root_indices = grapheme_root_hat.max(1)
@@ -77,7 +88,7 @@ class CNN(nn.Module):
 
         return grapheme_root_indices, vowel_diacritic_indices, consonant_diacritic_indices
 
-    def test_on_batch(self, inputs, outputs):
+    def test_on_batch(self, inputs, outputs, verbose=0):
         grapheme_root = Tensor(outputs[0])
         vowel_diacritic = Tensor(outputs[1])
         consonant_diacritic = Tensor(outputs[2])
@@ -87,6 +98,17 @@ class CNN(nn.Module):
         _, consonant_diacritic_tru = consonant_diacritic.max(1)
 
         grapheme_root_hat, vowel_diacritic_hat, consonant_diacritic_hat = self.predict(inputs)
+        grapheme_root_hat = grapheme_root_hat.cpu()
+        vowel_diacritic_hat = vowel_diacritic_hat.cpu()
+        consonant_diacritic_hat = consonant_diacritic_hat.cpu()
+
+        if verbose == 1:
+            print(grapheme_root_tru[:10])
+            print(grapheme_root_hat[:10])
+            print(vowel_diacritic_tru[:10])
+            print(vowel_diacritic_hat[:10])
+            print(consonant_diacritic_tru[:10])
+            print(consonant_diacritic_hat[:10])
 
         grapheme_root = accuracy_score(grapheme_root_tru, grapheme_root_hat)
         vowel_diacritic = accuracy_score(vowel_diacritic_tru, vowel_diacritic_hat)

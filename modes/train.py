@@ -43,7 +43,8 @@ class Train(Mode):
                 if batch % int(self["TRAIN"]["REPORT"]) == 0:
                     print("epochs {} batches {}".format(epoch+1, batch+1))
                     print("loss:", loss)
-                    model.test_on_batch(batch_images, outputs)
+                    model.test_on_batch(batch_images, outputs, verbose=1)
+                    print("time taken: {}".format(self.elapsed_time()))
                     print()
 
                 if reset:
