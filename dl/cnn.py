@@ -25,7 +25,7 @@ class CNN(nn.Module):
         self.soft_max = nn.Softmax(1)
 
         self._criterion = nn.BCELoss()
-        self._optimizer = optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
+        self._optimizer = optim.SGD(self.parameters(), lr=0.00001, momentum=0.9)
 
         self.to(self._device)
         print("device", self._device)
@@ -41,6 +41,7 @@ class CNN(nn.Module):
         x = self.fc1(x)
         x = F.relu(x)
         x = self.dropout2(x)
+
         grapheme_root = self.grapheme_root(x)
         grapheme_root = self.soft_max(grapheme_root)
 
@@ -121,3 +122,4 @@ class CNN(nn.Module):
 
     def load_weights(self, location):
         self.load_state_dict(torch.load(join(location, "cnn.model")))
+        self.eval()
