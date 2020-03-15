@@ -12,7 +12,6 @@ class Inference(Mode):
         dataset_location = self["MAIN"]["DATASET"]
 
         images = GrayImageData(join(dataset_location, "test-{}".format(self["MAIN"]["IMAGE_VERSION"])))
-        # print(images)
         labels = CSVData(join(dataset_location, "test.csv"), batch_size=int(self["TRAIN"]["BATCH_SIZE"]))
         inference_data, _ = labels.next_batch()
         image_names = inference_data["image_id"].apply(lambda x: x+".png").unique()

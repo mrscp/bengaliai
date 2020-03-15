@@ -3,6 +3,7 @@ from dataset.dataset import GrayImageData, CSVData
 from os.path import join
 from dl.cnn import CNN
 from keras.utils import to_categorical
+from torchsummary import summary
 
 
 class Train(Mode):
@@ -15,6 +16,7 @@ class Train(Mode):
         labels = CSVData(join(dataset_location, "train.csv"), batch_size=int(self["TRAIN"]["BATCH_SIZE"]))
 
         model = CNN()
+        print(summary(model, (1, 128, 128)))
 
         train = True
 
@@ -59,3 +61,4 @@ class Train(Mode):
 
         print("saving weights")
         model.save_weights(self["MAIN"]["MODEL_LOCATION"])
+

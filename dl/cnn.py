@@ -18,14 +18,19 @@ class CNN(nn.Module):
         self.dropout1 = nn.Dropout2d(0.25)
         self.dropout2 = nn.Dropout2d(0.5)
         self.fc1 = nn.Linear(246016, 128)
-        self.grapheme_root = nn.Linear(128, 168)
+
+        self.grapheme_root_priority_1 = nn.Linear(128, 10000)
+        self.grapheme_root_priority_2 = nn.Linear(10000, 1024)
+        self.grapheme_root = nn.Linear(1024, 168)
+
         self.vowel_diacritic = nn.Linear(128, 11)
+
         self.consonant_diacritic = nn.Linear(128, 7)
 
         self.soft_max = nn.Softmax(1)
 
         self._criterion = nn.BCELoss()
-        self._optimizer = optim.SGD(self.parameters(), lr=0.00001, momentum=0.9)
+        self._optimizer = optim.Adam(self.parameters())
 
         self.to(self._device)
         print("device", self._device)
@@ -42,7 +47,9 @@ class CNN(nn.Module):
         x = F.relu(x)
         x = self.dropout2(x)
 
-        grapheme_root = self.grapheme_root(x)
+        grapheme_root = self.grapheme_root_priority_1(x)
+        grapheme_root = self.grapheme_root_priority_2(grapheme_root)
+        grapheme_root = self.grapheme_root(grapheme_root)
         grapheme_root = self.soft_max(grapheme_root)
 
         vowel_diacritic = self.vowel_diacritic(x)
@@ -118,8 +125,11 @@ class CNN(nn.Module):
         print("accuracy: grapheme root {}, vowel diacritic {}, consonant diacritic {}".format(grapheme_root, vowel_diacritic, consonant_diacritic))
 
     def save_weights(self, location):
-        torch.save(self.state_dict(), join(location, "cnn.model"))
+        torch.save(self.state_dict(), join(location, "cnn.weights"))
 
     def load_weights(self, location):
-        self.load_state_dict(torch.load(join(location, "cnn.model")))
+        self.load_state_dict(torch.load(join(location, "cnn.weights")))
         self.eval()
+
+    def save(self, location):
+        torch.save(self, join(location, "cnn.model"))
