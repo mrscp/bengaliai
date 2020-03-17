@@ -8,6 +8,57 @@ from os.path import join
 
 
 class CNN(nn.Module):
+    """
+    CNN model with PyTorch
+
+    Attributes
+    ----------
+    _device: str
+        Should it run on GPU or CPU
+    conv1: nn.Conv2d
+        First convolution layer
+    conv2: nn.Conv2d
+        Second convolution layer
+    dropout1: nn.Dropout2d
+        First dropout layer
+    dropout2: nn.Dropout2d
+        Second dropout layer
+    fc1: nn.Linear
+        Fully connected layer
+
+    grapheme_root_priority_1: nn.Linear
+        Giving more priority for grapheme_root
+    grapheme_root_priority_2: nn.Linear
+        Giving more priority for grapheme_root
+    grapheme_root: nn.Linear
+        Output layer for grapheme_root
+    vowel_diacritic: nn.Linear
+        Output layer for vowel diacritic
+    consonant_diacritic: nn.Linear
+        Output layer for consonant diacritic
+    soft_max: nn.Softmax
+        Softmax activation for the output layers
+
+    _criterion: nn.BCELoss
+        Binary cross entropy loss function for the model
+    _optimizer: optim.Adam
+        Optimizer for the model
+
+    Methods
+    -------
+    forward(self, x):
+        Feed forward method for the model
+    train_on_batch(self, inputs, outputs):
+        Train the model with a given batch
+    predict(self, inputs):
+        Predict with the model based on the input given
+    test_on_batch(self, inputs, outputs, verbose=0):
+        Test the model based on the given input and output values
+    save_weights(self, location):
+        Saves model weights
+    load_weights(self, location):
+        Load existing model weights
+    """
     def __init__(self):
         super(CNN, self).__init__()
         use_cuda = torch.cuda.is_available()
@@ -36,6 +87,13 @@ class CNN(nn.Module):
         print("device", self._device)
 
     def forward(self, x):
+        """
+        Feed forward method for the model
+        :param x: Tensor
+            Input data
+        :return: (Tensor, Tensor, Tensor)
+            Tuple of predicted value of grapheme_root, vowel_diacritic, consonant_diacritic
+        """
         x = self.conv1(x)
         x = F.relu(x)
         x = self.conv2(x)
@@ -61,6 +119,15 @@ class CNN(nn.Module):
         return grapheme_root, vowel_diacritic, consonant_diacritic
 
     def train_on_batch(self, inputs, outputs):
+        """
+        Train the model based on the given batch of data
+        :param inputs: array
+            Values for input features
+        :param outputs: array
+            Values for output features
+        :return: float
+            Batch loss
+        """
         inputs = Tensor(inputs)
         grapheme_root = Tensor(outputs[0])
         vowel_diacritic = Tensor(outputs[1])
@@ -86,6 +153,13 @@ class CNN(nn.Module):
         return loss.item()
 
     def predict(self, inputs):
+        """
+        Predits with the model based on the given input feature values
+        :param inputs: array
+            Input feature values
+        :return: (Tensor, Tensor, Tensor)
+            Indices for grapheme_root, vowel_diacritic, consonant_diacritic
+        """
         inputs = Tensor(inputs)
         inputs = inputs.to(self._device)
         grapheme_root_hat, vowel_diacritic_hat, consonant_diacritic_hat = self(inputs)
@@ -97,6 +171,13 @@ class CNN(nn.Module):
         return grapheme_root_indices, vowel_diacritic_indices, consonant_diacritic_indices
 
     def test_on_batch(self, inputs, outputs, verbose=0):
+        """
+
+        :param inputs:
+        :param outputs:
+        :param verbose:
+        :return:
+        """
         grapheme_root = Tensor(outputs[0])
         vowel_diacritic = Tensor(outputs[1])
         consonant_diacritic = Tensor(outputs[2])
@@ -130,6 +211,3 @@ class CNN(nn.Module):
     def load_weights(self, location):
         self.load_state_dict(torch.load(join(location, "cnn.weights")))
         self.eval()
-
-    def save(self, location):
-        torch.save(self, join(location, "cnn.model"))
